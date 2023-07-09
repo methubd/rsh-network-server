@@ -90,6 +90,13 @@ async function run() {
       res.send(result);
     })
 
+    app.get('/appointments/:userEmail', verifyJWT, async (req, res) => {
+      const email = req.params.userEmail;
+      const query = {userEmail: email}
+      const result = await appointmentsCollection.find(query).toArray();
+      res.send(result)
+    })
+
 
     /* *********************************************
      * Users Authorization and Verification Routes
