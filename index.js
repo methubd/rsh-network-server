@@ -43,7 +43,7 @@ async function run() {
 
     const userCollection = client.db('RSHNetowrk').collection('users');
     const consultantCollection = client.db('RSHNetowrk').collection('consultants');
-    
+    const appointmentsCollection = client.db('RSHNetowrk').collection('appointments');
 
     app.post('/jwt', (req, res) => {
       const user = req.body;
@@ -60,8 +60,33 @@ async function run() {
       res.send(result);
     })
 
+    app.delete('/consultants/:id', verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await consultantCollection.deleteOne(query);
+      res.send(result)
+    })
+
     app.get('/consultants', async (req, res) => {
       const result = await consultantCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.get('/consultant/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await consultantCollection.findOne(query);
+      res.send(result)
+    })
+
+    /* *********************************************
+     * Booked Appointment Routes
+    ************************************************/
+
+    app.post('/appointments', async (req, res) => {
+      const newAppointment = req.body;
+      console.log(newAppointment);
+      const result = await appointmentsCollection.insertOne(newAppointment);
       res.send(result);
     })
 
@@ -70,6 +95,7 @@ async function run() {
      * Users Authorization and Verification Routes
     ************************************************/
 
+    //TODO: 
     app.post('/users', async (req, res) => {
         const newUser = req.body;
         const query = {email: newUser.email};
@@ -84,9 +110,31 @@ async function run() {
         }
     })
 
+    // TODO: must verify admin
     app.get('/users',verifyJWT, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
+    })
+
+    // make role to Doctor route
+    // TODO: must verify Admin
+    app.put('/users', verifyJWT, async (req, res) => {
+      const request = req.body;
+      const email = request.email;
+      const filter = {email: email};      
+      const options = {upsert: true}
+
+      const newRole =  {
+        $set: {
+          role: request.role,
+        }
+      }
+
+      console.log();
+
+      const result = await userCollection.updateOne(filter, newRole, options)
+      res.send(result)
+
     })
 
     // TODO: secure this api
