@@ -21,6 +21,7 @@ const verifyJWT = (req, res, next) => {
       return res.status(403).send({error: true, message: 'Unauthorized Access'})
     }
     res.decoded = decoded;
+    
     next();
   })
 }
@@ -50,6 +51,21 @@ async function run() {
       const token = jwt.sign(user, process.env.TOKEN_SECRET, {expiresIn: '1h'});
       res.send({token});
     })
+
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.params.email;
+      const query = {email: email};
+      const user = await userCollection.findOne(query);
+
+      if (user?.role !== 'admin'){
+        res.status(403).send({
+          error: true,
+          message: "Forbidden Access",
+        })
+      }
+      next();
+    }
+
     /* *********************************************
      * Add doctors api
     ************************************************/
@@ -85,7 +101,6 @@ async function run() {
 
     app.post('/appointments', async (req, res) => {
       const newAppointment = req.body;
-      console.log(newAppointment);
       const result = await appointmentsCollection.insertOne(newAppointment);
       res.send(result);
     })
@@ -102,7 +117,16 @@ async function run() {
      * Users Authorization and Verification Routes
     ************************************************/
 
-    //TODO: 
+    //TODO: verify JWT must secure the api
+    app.get('/users/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = {email: email};
+      const user = await userCollection.findOne(query);
+      const result = {admin : user?.role === 'admin'}
+      res.send(result.admin)
+    })
+
+    //TODO: secure api
     app.post('/users', async (req, res) => {
         const newUser = req.body;
         const query = {email: newUser.email};
@@ -117,14 +141,14 @@ async function run() {
         }
     })
 
-    // TODO: must verify admin
+    // TODO: must verify admin secure api
     app.get('/users',verifyJWT, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     })
 
     // make role to Doctor route
-    // TODO: must verify Admin
+    // TODO: must verify Admin secure api
     app.put('/users', verifyJWT, async (req, res) => {
       const request = req.body;
       const email = request.email;
@@ -136,9 +160,6 @@ async function run() {
           role: request.role,
         }
       }
-
-      console.log();
-
       const result = await userCollection.updateOne(filter, newRole, options)
       res.send(result)
 
