@@ -20,7 +20,7 @@ const verifyJWT = (req, res, next) => {
     if(error){
       return res.status(403).send({error: true, message: 'Unauthorized Access'})
     }
-    res.decoded = decoded;
+    req.decoded = decoded;
     
     next();
   })
@@ -53,7 +53,7 @@ async function run() {
     })
 
     const verifyAdmin = async (req, res, next) => {
-      const email = req.params.email;
+      const email = req.decoded.email;
       const query = {email: email};
       const user = await userCollection.findOne(query);
 
@@ -117,8 +117,7 @@ async function run() {
      * Users Authorization and Verification Routes
     ************************************************/
 
-    //TODO: verify JWT must secure the api
-    app.get('/users/admin/:email', async (req, res) => {
+    app.get('/users/admin/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       const query = {email: email};
       const user = await userCollection.findOne(query);
@@ -142,14 +141,12 @@ async function run() {
     })
 
     // TODO: must verify admin secure api
-    app.get('/users',verifyJWT, async (req, res) => {
+    app.get('/users',verifyJWT, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     })
 
-    // make role to Doctor route
-    // TODO: must verify Admin secure api
-    app.put('/users', verifyJWT, async (req, res) => {
+    app.put('/users', verifyJWT, verifyAdmin, async (req, res) => {
       const request = req.body;
       const email = request.email;
       const filter = {email: email};      
