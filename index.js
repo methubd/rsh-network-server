@@ -96,6 +96,12 @@ async function run() {
       }      
     })
 
+    app.get('/patient-review', async (req, res) => {
+      const result = await patientReviewCollection.find().toArray();
+      console.log(result.length);
+      res.send(result)
+    })
+
     /* *********************************************
      * Add doctors api
     ************************************************/
