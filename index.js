@@ -45,6 +45,8 @@ async function run() {
     const userCollection = client.db('RSHNetowrk').collection('users');
     const consultantCollection = client.db('RSHNetowrk').collection('consultants');
     const appointmentsCollection = client.db('RSHNetowrk').collection('appointments');
+    const servicesCollection = client.db('RSHNetowrk').collection('services');
+    const patientReviewCollection = client.db('RSHNetowrk').collection('patientReview');
 
     app.post('/jwt', (req, res) => {
       const user = req.body;
@@ -65,6 +67,34 @@ async function run() {
       }
       next();
     }
+    /* *********************************************
+     * Services Api
+    ************************************************/
+
+    app.get('/feature-services', async (req, res) => {
+      const result = await servicesCollection.find().toArray();
+      res.send(result)
+    })
+
+    /* *********************************************
+     * Patient Review Api
+    ************************************************/
+
+    app.post('/patient-review', verifyJWT, async (req, res) => {
+      const patientReview = req.body;
+      const email = patientReview.ptEmail;
+      const query = {ptEmail: email}
+      const previousReview = await patientReviewCollection.findOne(query);
+
+      if (previousReview) {
+        return res.send({duplicate: true, message: 'One patient can add review for one time.'})
+      }
+      
+      else{
+        const result = await patientReviewCollection.insertOne(patientReview);
+        res.send(result)
+      }      
+    })
 
     /* *********************************************
      * Add doctors api
