@@ -47,6 +47,7 @@ async function run() {
     const appointmentsCollection = client.db('RSHNetowrk').collection('appointments');
     const servicesCollection = client.db('RSHNetowrk').collection('services');
     const patientReviewCollection = client.db('RSHNetowrk').collection('patientReview');
+    const healthPackageCollection = client.db('RSHNetowrk').collection('healthPackage');
 
     app.post('/jwt', (req, res) => {
       const user = req.body;
@@ -77,6 +78,22 @@ async function run() {
     })
 
     /* *********************************************
+     * Health Packages
+    ************************************************/
+
+    app.get('/health-packages', async (req, res) => {
+      const result = await healthPackageCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.get('/health-packages/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await healthPackageCollection.findOne(query);
+      res.send(result);
+    })
+
+    /* *********************************************
      * Patient Review Api
     ************************************************/
 
@@ -98,7 +115,6 @@ async function run() {
 
     app.get('/patient-review', async (req, res) => {
       const result = await patientReviewCollection.find().toArray();
-      console.log(result.length);
       res.send(result)
     })
 
@@ -153,8 +169,7 @@ async function run() {
       const query = {_id: new ObjectId(id)}
       const result = await appointmentsCollection.deleteOne(query);
       res.send(result)
-    })
-
+    })    
 
     /* *********************************************
      * Users Authorization and Verification Routes
