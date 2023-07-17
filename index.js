@@ -40,7 +40,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    client.connect();
 
     const userCollection = client.db('RSHNetowrk').collection('users');
     const consultantCollection = client.db('RSHNetowrk').collection('consultants');
@@ -48,6 +48,7 @@ async function run() {
     const servicesCollection = client.db('RSHNetowrk').collection('services');
     const patientReviewCollection = client.db('RSHNetowrk').collection('patientReview');
     const healthPackageCollection = client.db('RSHNetowrk').collection('healthPackage');
+    const chatsCollection = client.db('RSHNetowrk').collection('chats');
 
     app.post('/jwt', (req, res) => {
       const user = req.body;
@@ -68,6 +69,54 @@ async function run() {
       }
       next();
     }
+
+    /* *********************************************
+     * Chats routes
+    ************************************************/
+
+    // Getting patientMessage
+    app.post('/chat-update/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = {senderEmail: email}
+      const newMessage = req.body;
+      const previousBox = await chatsCollection.findOne(query)
+
+      if(previousBox){
+        const filter = {senderEmail: email};
+        const options = {upsert: true}
+        const updateDoc = {
+          $push: {
+            content: newMessage
+          }
+        }
+
+        const result = await chatsCollection.updateOne(filter, updateDoc, options)
+        res.send(result)
+      }
+    })
+    
+    // Checking the previous visitor to chat
+    app.post('/chats/:email', async (req, res) => {
+      const newMessageBox = req.body;
+      const emailQuery = {senderEmail: req.params.email}
+      const query = await chatsCollection.findOne(emailQuery)
+
+      if(query){
+        return res.send({success: 200})
+      }
+
+      const result = await chatsCollection.insertOne(newMessageBox)
+      res.send(result)
+    })
+
+    app.get('/chats/:email', async (req, res) => {
+      const email = req.params.email
+      const query = {senderEmail: email}
+      const result = await chatsCollection.find(query).toArray();
+      // const result = await chatsCollection.find().toArray();
+      res.send(result);
+    })
+
     /* *********************************************
      * Services Api
     ************************************************/
