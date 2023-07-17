@@ -104,9 +104,10 @@ async function run() {
       if(query){
         return res.send({success: 200})
       }
-
-      const result = await chatsCollection.insertOne(newMessageBox)
-      res.send(result)
+      else{
+        const result = await chatsCollection.insertOne(newMessageBox)
+        res.send(result)
+      }
     })
 
     app.get('/chats/:email', async (req, res) => {
