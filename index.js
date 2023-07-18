@@ -233,7 +233,7 @@ async function run() {
       res.send(result.admin)
     })
 
-    app.get('/users/doctor/:email', async (req, res) => {
+    app.get('/users/doctor/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       const query = {email: email};
       const doctor = await userCollection.findOne(query);
@@ -241,7 +241,6 @@ async function run() {
       res.send(result.doctor)
     })
 
-    //TODO: secure api
     app.post('/users', async (req, res) => {
         const newUser = req.body;
         const query = {email: newUser.email};
