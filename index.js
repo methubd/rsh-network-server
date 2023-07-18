@@ -224,13 +224,21 @@ async function run() {
     /* *********************************************
      * Users Authorization and Verification Routes
     ************************************************/
-
+    // checking admin
     app.get('/users/admin/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       const query = {email: email};
       const user = await userCollection.findOne(query);
       const result = {admin : user?.role === 'admin'}
       res.send(result.admin)
+    })
+
+    app.get('/users/doctor/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = {email: email};
+      const doctor = await userCollection.findOne(query);
+      const result = {doctor : doctor?.role === 'doctor'}
+      res.send(result.doctor)
     })
 
     //TODO: secure api
