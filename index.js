@@ -40,7 +40,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    client.connect();
+   client.connect();
 
     const userCollection = client.db('RSHNetowrk').collection('users');
     const consultantCollection = client.db('RSHNetowrk').collection('consultants');
@@ -73,6 +73,18 @@ async function run() {
     /* *********************************************
      * Chats routes
     ************************************************/
+    // Getting all message for chat response
+    app.get('/chat-response', verifyJWT, async (req, res) => {
+      const result = await chatsCollection.find().toArray()
+      res.send(result);
+    })
+
+    app.get('/chat-response/:id', async (req, res) => {
+      const chatId = req.params.id;
+      const query = {_id: new ObjectId(chatId)}
+      const result = await chatsCollection.findOne(query)
+      res.send(result)
+    })
 
     // Getting patientMessage
     app.post('/chat-update/:email', async (req, res) => {
