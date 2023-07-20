@@ -74,7 +74,8 @@ async function run() {
      * Chats routes
     ************************************************/
     // Getting all message for chat response
-    app.get('/chat-response', verifyJWT, async (req, res) => {
+    // TODO: secure the api
+    app.get('/chat-response', async (req, res) => {
       const result = await chatsCollection.find().toArray()
       res.send(result);
     })
@@ -84,6 +85,27 @@ async function run() {
       const query = {_id: new ObjectId(chatId)}
       const result = await chatsCollection.findOne(query)
       res.send(result)
+    })
+
+    // Getting patientMessage
+    app.post('/chat-update-doctor/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const newDoctorMessage = req.body;
+      const previousChatBox = await chatsCollection.findOne(query)
+
+      if(previousChatBox){
+        const filter = {_id: new ObjectId(id)};
+        const options = {upsert: true}
+        const updateDoc = {
+          $push: {
+            content: newDoctorMessage
+          }
+        }
+
+        const result = await chatsCollection.updateOne(filter, updateDoc, options)
+        res.send(result)
+      }
     })
 
     // Getting patientMessage
