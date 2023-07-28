@@ -258,8 +258,8 @@ async function run() {
     /* *********************************************
      * Users Authorization and Verification Routes
     ************************************************/
-    // checking admin
-    app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+    // TODO: secure this api's (Logout Problem)
+    app.get('/users/admin/:email', async (req, res) => {
       const email = req.params.email;
       const query = {email: email};
       const user = await userCollection.findOne(query);
@@ -267,7 +267,7 @@ async function run() {
       res.send(result.admin)
     })
 
-    app.get('/users/doctor/:email', verifyJWT, async (req, res) => {
+    app.get('/users/doctor/:email', async (req, res) => {
       const email = req.params.email;
       const query = {email: email};
       const doctor = await userCollection.findOne(query);
